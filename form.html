@@ -1,0 +1,207 @@
+<html lang="en">
+	<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width,maximum-scale=1.0,initial-scale=1.0,minimum-scale=1.0,user-scalable=yes,shrink-to-fit=no" name="viewport">
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <style>
+	@media (min-width: 768px) {
+       #map {
+        height: 400px;
+        width: 375px;
+       }
+	}
+	#map {
+		height: 400px;
+        width: 375px;
+    }
+	#closest-stores > p > span, #closest-stores-hdr > p > span {
+		width: 25%;
+		text-align: center;
+		display: inline-block;
+		vertical-align: top;
+	}
+	#closest-stores > p > span {
+		font-size: .6em;
+	}
+    </style>
+	<script>
+	var map, marker, location_markers = [];
+	
+	function domReady(callback) {
+    // Mozilla, Opera and WebKit
+    if (document.addEventListener) {
+        document.addEventListener("DOMContentLoaded", callback, false);
+        // If Internet Explorer, the event model is used
+    } else if (document.attachEvent) {
+        document.attachEvent("onreadystatechange", function() {
+            if (document.readyState === "complete" ) {
+                callback();
+            }
+        });
+        // A fallback to window.onload, that will always work
+    } else {
+        var oldOnload = window.onload;
+        window.onload = function () {
+            oldOnload && oldOnload();
+            callback();
+        }
+    }
+	}
+	
+	domReady(function() {
+		document.getElementById('location-form').addEventListener('submit', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+		});
+	});
+	</script>
+</head>
+   <body>
+   <div class="container-fluid">
+   <div class="row">
+   <div class="col-xs-18 col-md-6">
+      <form id="location-form" action="" method="post">
+         <fieldset>
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" placeholder="Enter your location" />
+            <input class="btn btn-default" type="button" value="search" onclick="search();" />
+         </fieldset>
+      </form>
+	</div>
+	  <!--<div id="map-canvas">
+	  </div>-->
+	</div>
+	<div class="row">
+		<div id="closest-stores-hdr" class="col-xs-18 col-md-6">
+			<p><span>name</span><span>street</span><span>city</span><span>lat/lng</span></p>
+		</div>
+		<div id="closest-stores" class="col-xs-18 col-md-6">
+		
+		</div>
+	</div>
+	<div class="row">
+	  <div class="col-xs-18 col-md-6">
+	  <h3>Starbucks (New York City)</h3>
+	  </div>
+    <div id="map" class="col-xs-18 col-md-6"></div>
+	</div>
+    <script>
+      function initMap() {
+        var macys = {lat: 40.751014, lng: -73.990248};
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 8,
+          center: macys
+        });
+        marker = new google.maps.Marker({
+          position: macys,
+          map: map
+        });
+      }
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDmL2a4qVy57mPo8MkFO07mpqhMmpWhZsQ&callback=initMap">
+    </script>
+	  <!--AIzaSyDmL2a4qVy57mPo8MkFO07mpqhMmpWhZsQ-->
+  <script>
+	function search()
+	{
+		var query = document.getElementById('location').value;
+		var closest_stores = document.getElementById('closest-stores');
+		closest_stores.innerHTML = '';
+		location_markers.length = 0;
+		xmlhttp = new XMLHttpRequest();
+		xmlhttp.open("GET","https://maps.googleapis.com/maps/api/geocode/json?address="+query+"&key=AIzaSyDmL2a4qVy57mPo8MkFO07mpqhMmpWhZsQ", true);
+		xmlhttp.onreadystatechange=function() {
+			if (xmlhttp.readyState==4 && xmlhttp.status==200){
+				var result = JSON.parse(xmlhttp.responseText);
+				if (result.status !== "ZERO_RESULTS") {
+					//do something with result, another ajax call to nodejs web service
+					var location = result.results[0].geometry.location;
+					pan(location.lat, location.lng);
+					console.log(result);
+					var xmlhttp2 = new XMLHttpRequest();
+					xmlhttp2.open("GET",document.URL+"search?lat="+location.lat+"&lng="+location.lng, true);
+					xmlhttp2.onreadystatechange=function() {
+						if (xmlhttp2.readyState==4 && xmlhttp2.status==200) {
+							var result = JSON.parse(xmlhttp2.responseText);
+							console.log(result);
+							if (result.locations) {
+								var h = '';
+								var locations = JSON.parse(result.locations);
+								//var center = locations[0];
+								for (var i in locations) {
+									var location2 = locations[i];
+									h += '<p><span>'+location2.name+'</span><span>'+location2.street+'</span><span>'+location2.city+'</span><span>'+location2.location.latitude+', '+location2.location.longitude+'</span></p>';
+									var new_marker = new google.maps.Marker({
+										position: {lat: location2.location.latitude, lng: location2.location.longitude},
+										map: map
+									});
+									location_markers.push(new_marker);
+								}
+								var bounds = new google.maps.LatLngBounds();
+								for (var i = 0; i < location_markers.length; i++) {
+									bounds.extend(location_markers[i].getPosition());
+								}
+
+								//center the map to a specific spot (city)
+								//map.setCenter(center); 
+
+								//center the map to the geometric center of all markers
+								map.setCenter(bounds.getCenter());
+
+								map.fitBounds(bounds);
+
+								//remove one zoom level to ensure no marker is on the edge.
+								map.setZoom(map.getZoom()-1); 
+	
+								// set a minimum zoom 
+								// if you got only 1 marker or all markers are on the same address map will be zoomed too much.
+								if(map.getZoom()> 15){
+									map.setZoom(15);
+								}
+
+								//Alternatively this code can be used to set the zoom for just 1 marker and to skip redrawing.
+								//Note that this will not cover the case if you have 2 markers on the same address.
+								if(location_markers.length == 1){
+									map.setMaxZoom(15);
+									map.fitBounds(bounds);
+									map.setMaxZoom(Null)
+								}
+								closest_stores.innerHTML = h;
+							}
+						}
+					}
+					xmlhttp2.send();
+				}
+			}
+		}
+		xmlhttp.send();
+	}
+	
+	function pan(lat, lng) {
+		var panPoint = new google.maps.LatLng(lat, lng);
+        map.panTo(panPoint)
+    }
+	/*var baiduMap = require('baidumap');
+	//baidu map api key
+	//OQFpbN2jAA9woaiGvpFM2MmuImI6jIjW
+	var BMap = baiduMap.create({'ak':'OQFpbN2jAA9woaiGvpFM2MmuImI6jIjW'});
+	var map = new BMap.Map("map-canvas"); 
+	var point = new BMap.Point(116.30814954222,40.056885091681); 
+	map.centerAndZoom(point, 16); 
+	//you have centralize the map 
+	map.addControl(new BMap.NavigationControl()); 
+	//add Navigation Controller 
+	map.addControl(new BMap.MapTypeControl()); //add Map Type Controller
+	map.addControl(new BMap.OverviewMapControl()); //add Overview Map Controller//
+	map.enableScrollWheelZoom(); //scroll wheel zoom is not working well in Mac book
+	//map.removeControl(CopyrightControl); 
+	map.addOverlay(new BMap.Marker(point)); //create new maker */
+</script>
+   </body>
+</html>

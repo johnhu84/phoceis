@@ -1,0 +1,76 @@
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"> 
+<meta charset="utf-8">
+
+<title>Geocoding service</title>
+
+<style>
+
+html, body, #map-canvas { height: 90%; width:90%; top: 50px; margin: 0px; padding: 0px }
+
+#panel { position: absolute; width: 50%; top: 5px; left: 10%; margin-left: -10px; z-index: 5; background-color: #fff; padding: 5px; border: 1px solid #999;}
+
+#address { width: 75%;} 
+</style> 
+<script src="http://api.map.baidu.com?ak=OQFpbN2jAA9woaiGvpFM2MmuImI6jIjW;">
+</script>
+
+</head>
+
+<body>
+
+<div id="panel">
+
+<input id="address" type="textbox" value="????" onkeydown="if(event.keyCode == 13){codeAddress();}"/>
+
+<input type="button" value="?????Baidu Map?" onclick="codeAddress()"/>
+
+</div>
+
+<div id="map-canvas"></div>
+
+<script type="text/javascript"> 
+var geocoder; //global variable for GEOCoder 
+var map; //global variable for Baidu Map 
+//initialize Baidu Map 
+function initialize() { 
+	//get map-canvas as Baidu Map painting area 
+	map = new BMap.Map("map-canvas"); 
+	var point = new BMap.Point(116.30814954222,40.056885091681); 
+	map.centerAndZoom(point, 16); 
+	//you have centralize the map 
+	map.addControl(new BMap.NavigationControl()); 
+	//add Navigation Controller 
+	map.addControl(new BMap.MapTypeControl()); //add Map Type Controller
+	map.addControl(new BMap.OverviewMapControl()); //add Overview Map Controller//
+	map.enableScrollWheelZoom(); //scroll wheel zoom is not working well in Mac book
+	//map.removeControl(CopyrightControl); 
+	map.addOverlay(new BMap.Marker(point)); //create new maker 
+	//geocoder = new BMap.Geocoder(); //create new GEO coder //add event listener depends on needs.//
+}
+	//map.addEventListener('zoomend', function() {}); } //show content in InfoWindow 
+	function createInfoWindowContent(address,latlng) { 
+		return [address, 'LatLng: ' + latlng.lat + ' , ' + latlng.lng].join('');
+	} 
+	//Convert new address into Map Marker on Baidu Map 
+	function codeAddress() { 
+		var address = document.getElementById('address').value; 
+		geocoder.getPoint(address, function(point) { 
+			//alert(point.lat ':' point.lng); 
+			//if the GEO coder error, then it will return null. 
+			if (point) { 
+				map.centerAndZoom(point, 16); 
+				var marker = new BMap.Marker(point); 
+				map.addOverlay(marker); 
+				var opts = { width : 250, height: 250 };
+				var infoWindow = new BMap.InfoWindow(createInfoWindowContent(address,point),opts); map.openInfoWindow(infoWindow,map.getCenter());
+			}
+		});
+	} 
+initialize(); //Call initialize function 
+</script>
+
+</body>
+
+</html>

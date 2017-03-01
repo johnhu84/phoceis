@@ -1,0 +1,20 @@
+{
+  "name": "phoceis",
+  "version": "1.0.0",
+  "description": "phoceis technical assessment",
+  "main": "server.js",
+  "scripts": {
+    "test": "test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/johnhu84/phoceis"
+  },
+  "author": "Chunlin Hu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/johnhu84/phoceis/issues"
+  },
+  "homepage": "https://github.com/johnhu84/phoceis"
+}
