@@ -1,6 +1,11 @@
 var http = require('http'), url = require('url'), queryString = require('querystring');
 var baiduMap = require('baidumap');
 var GeoPoint = require('geopoint');
+/*var app = require('express');
+var handlebars = require('express3-handlebars').create({ defaultLayout: 'main' }); 
+app.engine('handlebars', handlebars.engine); 
+app.set('view engine', 'handlebars');*/
+
 
 //baidu map api key
 //OQFpbN2jAA9woaiGvpFM2MmuImI6jIjW
@@ -66,11 +71,11 @@ function search(req, res) {
 	var destination = {"location": {"latitude":lat, "longitude":lng}};
 
 	stores.sort(getSortFunction(destination));//req.get('query'));
-	var locations = stores.slice(0, 5);
+	//var locations = stores.slice(0, 5);
 	
 	var json = JSON.stringify({ 
 		location: location, 
-		locations: JSON.stringify(locations)
+		locations: JSON.stringify(stores)
 	});
 	res.end(json);
 }

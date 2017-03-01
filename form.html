@@ -80,6 +80,9 @@
 		<div id="closest-stores-hdr" class="col-xs-18 col-md-6">
 			<p><span>name</span><span>street</span><span>city</span><span>lat/lng</span></p>
 		</div>
+		<div class="col-xs-18 col-md-6">
+			<h4>5 closest locations</h4>
+		</div>
 		<div id="closest-stores" class="col-xs-18 col-md-6">
 		
 		</div>
@@ -87,6 +90,7 @@
 	<div class="row">
 	  <div class="col-xs-18 col-md-6">
 	  <h3>Starbucks (New York City)</h3>
+	  <h4 id='current-location'></h4>
 	  </div>
     <div id="map" class="col-xs-18 col-md-6"></div>
 	</div>
@@ -135,14 +139,22 @@
 								var locations = JSON.parse(result.locations);
 								//var center = locations[0];
 								for (var i in locations) {
-									var location2 = locations[i];
-									h += '<p><span>'+location2.name+'</span><span>'+location2.street+'</span><span>'+location2.city+'</span><span>'+location2.location.latitude+', '+location2.location.longitude+'</span></p>';
+									if (i <= 5) { //display details of only top 5 locations
+										var location2 = locations[i];
+										h += '<p><span>'+location2.name+'</span><span>'+location2.street+'</span><span>'+location2.city+'</span><span>'+location2.location.latitude+', '+location2.location.longitude+'</span></p>';
+									}
 									var new_marker = new google.maps.Marker({
 										position: {lat: location2.location.latitude, lng: location2.location.longitude},
 										map: map
 									});
 									location_markers.push(new_marker);
 								}
+								if (result.location) {
+									document.getElementById('current-location').innerHTML = '<span>' + result.location.lat + ', ' + result.location.lng + '</span>';
+								} else {
+									document.getElementById('current-location').innerHTML = '';
+								}
+								
 								var bounds = new google.maps.LatLngBounds();
 								for (var i = 0; i < location_markers.length; i++) {
 									bounds.extend(location_markers[i].getPosition());
